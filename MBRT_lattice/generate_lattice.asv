@@ -1,0 +1,145 @@
+function [Vpeak,Vvalley,Vlattice,Plattice]=generate_lattice(ct,ctv1,ctv2,dr,ddr,ptid)
+% ctv1 is the ctv volume, ctv2 is the volume of ctv1 with a inward margin
+% dr is the center-to-center distance of two vertices
+% drr is the diameter of vertices
+
+tmp_dr = 5;
+%Define all possible lattice points over the entire region
+range_x=[ct.x(1)+8*tmp_dr,ct.x(end)-9*tmp_dr];
+range_y=[ct.y(1)+9*tmp_dr,ct.y(end)-6*tmp_dr];
+range_z=[ct.z(1)+8*tmp_dr,ct.z(end)];
+%R=[0,3,4];% R is the parameter to shift the lattice position to fit the minibeam pattern
+Rx = 0:2:8;
+Ry = 0:2:8;
+Rz = 0:2:8;
+% Rx = [3 4 5];
+% Ry = [7 8 9];
+% Rz = [7 8 9];
+%Rx=4;Ry=8;Rz=7;
+for Ri = Rx
+for Rj = Ry
+for Rk = Rz
+R = [Ri,Rj,Rk];
+disp(R);
+position_x=range_x(1)+R(1):dr:range_x(2)+R(1);
+position_y=range_y(1)+R(2):dr:range_y(2)+R(2);
+position_z=range_z(1)+R(3):dr:range_z(2)+R(3);
+dim_lattice=[numel(position_x) numel(position_y) numel(position_z)];% number of points on each direction
+
+%% Define lattice grid over ctv2
+% This is done under the assumption that ctv2 is not a disjoint volume
+
+% Define the cube (coordinates) that encompasses ctv2
+tmp_id = [min(ctv2) max(ctv2)];
+id2 = zeros(3,2);
+% coord = zeros(3,2);
+% for i = 1:2
+%     id1 = tmp_id(i);
+%     id2(3,i) = ceil(id1/(ct.cubeDim(1)*ct.cubeDim(2)));
+%     id2(2,i) = ceil(mod(id1,ct.cubeDim(1)*ct.cubeDim(2))/ct.cubeDim(1));
+%     id2(1,i) = mod(mod(id1,ct.cubeDim(1)*ct.cubeDim(2)),ct.cubeDim(1));
+%     coord(3,i) = ct.z(id2(3,i));
+%     coord(2,i) = ct.y(id2(2,i));
+%     coord(1,i) = ct.x(id2(1,i));
+% end
+id2(:,1) = 1000;
+id2(:,2) = -1000;
+coord = zeros(3,2);
+for i = 1:numel(ctv2)
+    id1 = ctv2(i);
+    zz = ceil(id1/(ct.cubeDim(1)*ct.cubeDim(2)));
+    yy = ceil(mod(id1,ct.cubeDim(1)*ct.cubeDim(2))/ct.cubeDim(1));
+    xx = mod(mod(id1,ct.cubeDim(1)*ct.cubeDim(2)),ct.cubeDim(1));
+    id2(3,1) = min(zz,id2(3,1));
+    id2(3,2) = max(zz,id2(3,2));
+    id2(2,1) = min(yy,id2(2,1));
+    id2(2,2) = max(yy,id2(2,2));
+    id2(1,1) = min(xx,id2(1,1));
+    id2(1,2) = max(xx,id2(1,2));
+    coord(3,1) = ct.z(id2(3,1));
+    coord(2,1) = ct.y(id2(2,1));
+    coord(1,1) = ct.x(id2(1,1));
+    coord(3,2) = ct.z(id2(3,2));
+    coord(2,2) = ct.y(id2(2,2));
+    coord(1,2) = ct.x(id2(1,2));
+end
+
+% Define all possible lattice points that are within the cube defined above
+b = find(position_z>coord(3,2),1);
+a = find(position_z<coord(3,1));
+a = a(end);
+position_z = position_z(a:b);
+b = find(position_y>coord(2,2),1);
+a = find(position_y<coord(2,1));
+a = a(end);
+position_y = position_y(a:b);
+b = find(position_x>coord(1,2),1);
+a = find(position_x<coord(1,1));
+a = a(end);
+position_x = position_x(a:b);
+dim_lattice=[numel(position_x) numel(position_y) numel(position_z)];% number of points on each direction
+
+% position_x = [7;];
+% position_y = [74;];
+% position_z = [141.5;];
+% dim_lattice = [1 1 1];
+
+N_obj=0;
+lattice_x=[];
+lattice_y=[];
+lattice_z=[];
+disp(dim_lattice)
+for i=1:dim_lattice(1)
+    disp(i)
+    for j=1:dim_lattice(2)
+        for k=1:dim_lattice(3)
+            xx = find(ct.x==position_x(i));
+            yy = find(ct.y==position_y(i));
+            zz = find(ct.z==position_z(i));
+            ii=sub2ind(ct.cubeDim,xx,yy,zz);
+            if ismember(ii,ctv2)
+                disp('peak center art of ctv2')
+                id=generate_id(position_x(i),position_y(j),position_z(k),ddr,ct);
+    %             dim=ct.cubeDim;
+    %             d=zeros(200*200*95,1);
+    %             d(ctv2)=0.5;
+    %             d(id)=1;
+    %             d=reshape(d,ct.cubeDim);
+    %             figure;imshow3D(d,[0,1])
+                if (all(ismember(id,ctv2)) && ~isempty(id))
+                    disp('found a lattice peak')
+                    N_obj=N_obj+1;
+                    lattice_x=[lattice_x;position_x(i)];
+                    lattice_y=[lattice_y;position_y(j)];
+                    lattice_z=[lattice_z;position_z(k)];
+                end
+            else
+                tmp_var = 0;
+                %disp('peak center not part of ctv2')
+        end
+    end
+end
+Vlattice=cell(N_obj,1);
+%disp(N_obj)
+for i=1:N_obj
+    Vlattice(i)={{generate_id(lattice_x(i),lattice_y(i),lattice_z(i),ddr,ct)}};
+end
+Vpeak=[Vlattice{:,1}];
+%disp(Vlattice)
+%disp(Vpeak)
+try
+
+    Vpeak=unique(vertcat(Vpeak{:}));
+    Vvalley=setdiff(ctv1,Vpeak);
+    Plattice=[lattice_x,lattice_y,lattice_z];
+    fname = strcat('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\LVertices\LVertices111_',num2str(dr),'_',num2str(ddr),ptid,num2str(R(1)),num2str(R(2)),num2str(R(3)),'.mat');
+    save(fname, 'Vpeak','Vvalley','Vlattice','Plattice','dr','ddr','R');
+catch
+    disp('no lattice vertex found');
+end
+%save('tmp_lattice.mat','Vpeak','Vvalley','Vlattice','Plattice','dr','ddr','R');
+%save([folder 'MBRT_lattice\LVertices113_9306087.mat'], 'Vpeak','Vvalley','Vlattice','Plattice','dr','ddr','R');
+end
+end
+end
+end

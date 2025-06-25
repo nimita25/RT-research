@@ -1,0 +1,75 @@
+ptid='2286842'; 
+addpath('C:\Users\nshinde\Desktop\pMBRT\pMBRT');
+method=1;
+gridDim = '111';
+dr = 10;
+ddr = 3;
+px=2.12;nfrac=33;px0=px*nfrac;pvdr = 5;
+
+% 1. load ct & define oars & optimization parameter (depend on ptid)
+folder = 'C:\Users\nshinde\Desktop\pMBRT\';
+load([folder ptid '\' ptid '.mat'],'cst','ct');
+load([folder ptid '\' 'dij_' ptid '_doseGrid' gridDim '.mat']);
+load([ptid '_c.mat'],'c');
+
+x0=doseGrid.x;
+y0=doseGrid.y;
+z0=doseGrid.z;
+cubeDim=doseGrid.dimensions;
+x=ct.x;
+y=ct.y;
+z=ct.z;
+[x0,y0,z0] = ndgrid(x0,y0,z0);
+[x,y,z] = ndgrid(x,y,z);
+
+
+%load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_2286842\res_2286842_4_4_2024-12-07-23-52.mat','d','R')
+%load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_2286842\res_2286842_4_1_2024-12-07-11-18.mat','d','R')
+%load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_2286842\res_2286842_4_2_2024-12-07-07-38.mat','d','R')
+load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_2286842\res_2286842_4_3_2024-12-07-09-43.mat','d','R')
+
+
+% Load lattice info
+% fname = strcat('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\LVertices\LVertices' ,gridDim, '_',num2str(dr),'_',num2str(ddr),'_9306087_',num2str(R(1)),num2str(R(2)),num2str(R(3)),'.mat');
+%fname = strcat('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\LVertices\LVertices111_',num2str(dr),'_',num2str(ddr),'_',ptid,'_',num2str(R(1)),num2str(R(2)),num2str(R(3)),'.mat');
+
+%load(fname);
+load('2286842_lattice.mat');
+
+d=d/(px*pvdr);
+d=reshape(d,cubeDim);
+d(d>1.1999)=1.1199;
+ct.cubeHU{1}=interpn(x,y,z,ct.cubeHU{1},x0,y0,z0);
+resultGUI=struct('physicalDose',[]);
+resultGUI.physicalDose=d;
+
+
+tmp=cst([22],:);
+tmp{1,4}{1}=[Vpeak;Vvalley];
+%tmp{1,4}{1}=[c{1};c{2}];
+cst=tmp;
+cst{1,5}.visibleColor=[1 1 0];%(!)
+
+nx=cubeDim(1);
+ny=cubeDim(2);
+nz=cubeDim(3);
+
+idx=1:nx;
+idy=1:ny;
+idz=1:nz;
+
+ct.cubeDim=[numel(idx) numel(idy) numel(idz)];
+
+ct.x=doseGrid.x(idx);
+ct.y=doseGrid.y(idy);
+ct.z=doseGrid.z(idz);
+ct.cubeHU{1}=ct.cubeHU{1}(idx,idy,idz);
+resultGUI.physicalDose=resultGUI.physicalDose(idx,idy,idz);
+
+for i=1:size(cst,1)
+mask=zeros([nx ny nz]);
+mask(cst{i,4}{1})=1;
+mask=mask(idx,idy,idz);
+cst{i,4}{1}=find(mask==1);
+end
+matRadGUI

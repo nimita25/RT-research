@@ -1,14 +1,14 @@
 
 %clc;clear;close all;
 ptid = 'HN02';
-folder = ['..\' ptid '\'];
-addpath('..\utils')
+folder = ['../' ptid '/'];
+addpath('../utils')
 %addpath('G:\Tutorial_030624\code\utils_QC')
 load([folder ptid '.mat'], 'ct', 'cst');
 px = 8; % prescription dose
 nfrac = 5; % number of fraction
 mu_min = 5; % MMU threshold
-qc = 2; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice
+qc = 0; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice
 
 %% Define target and OAR
 ctv1 = cst{15,4}{1};   % PTV_59.5 Hao, 45Gy in 3 fractions
@@ -315,7 +315,7 @@ else
 outp.method = 'RND';
 end
 %fname =strcat('.\Results_', ptid, '\res_', ptid, '_NNZ_', int2str(NNZ), '_MIP_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
-fname =strcat('.\Results_1505_', ptid, '\res0202_', ptid, '_', int2str(numel(id)), '_NNZ_', int2str(NNZ), '_', outp.method, '_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
+fname =strcat('./Results_1505_', ptid, '/res0202_', ptid, '_', int2str(numel(id)), '_NNZ_', int2str(NNZ), '_', outp.method, '_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
 save(fname,"-struct","outp");
 
 

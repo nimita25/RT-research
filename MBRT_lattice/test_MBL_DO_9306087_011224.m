@@ -1,12 +1,13 @@
 %clc;clear;close all;
 ptid='9306087'; 
 gridDim = '111';
-addpath('C:\Users\nshinde\Desktop\pMBRT\pMBRT');
+addpath('../pMBRT');
 method=4; %1: pMBRTL-2, 2: pMBRTL-1, 3: pMBRTL-1e, 4: conv
 % 1. load ct & define oars & optimization parameter (depend on ptid)
-folder = 'C:\Users\nshinde\Desktop\pMBRT\';
-load([folder ptid '\' ptid '.mat'],'cst','ct');
-load([folder ptid '\' 'dij_' ptid '_doseGrid' gridDim '.mat']);
+folder = ['../' ptid '/'];
+load([folder ptid '.mat'], 'ct', 'cst');
+%load([folder ptid '/' ptid '.mat'],'cst','ct');
+load([folder 'dij_' ptid '_doseGrid' gridDim '.mat']);
 
 
 

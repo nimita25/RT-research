@@ -35,7 +35,7 @@ pln.radiationMode   = 'protons';
 pln.machine         = 'Generic';
 pln.numOfFractions  = 30;
 pln.propStf.bixelWidth      = bw;
-pln.propStf.gantryAngles = [45];
+pln.propStf.gantryAngles = [225];
 pln.propStf.couchAngles = [0];
 pln.propStf.numOfBeams      = numel(pln.propStf.gantryAngles);
 pln.propStf.isoCenter       = ones(pln.propStf.numOfBeams,1) * matRad_getIsoCenter(cst_ptv,ct,0);
@@ -63,9 +63,11 @@ y_min = min(min_y);
 y_max = max(max_y);
 
 w_coll = [0.4, y_max-y_min];  % size of each open slit (mm)
-cs_coll = 4;  % center-to-center distance (mm) 3-7
+for csii = [3 4 5 7]
+cs_coll = csii;  % center-to-center distance (mm) 3-7
+for ii = [0 2 1 -1 -0.5 0.5 1.5 -1.5]
 cx = x_min : cs_coll : x_max;
-shift = 2;
+shift = ii;
 cx = cx+shift; %add shift to MSC position. Default is align MSC with x_min (left side)
 ax = cx - w_coll(1);
 bx = cx + w_coll(1);
@@ -102,4 +104,6 @@ Dij0=spalloc(prod(cubeDim),dij.totalNumOfBixels,1);
 Dij0(DoseNumber,:)=dij.physicalDose{1};
 dij.physicalDose{1}=Dij0;
 
-%save([ ptid '_' num2str(pln.propStf.gantryAngles) '_S' num2str(shift) '.mat'],'dij','-v7.3');
+save([ ptid '_' num2str(pln.propStf.gantryAngles) '_ctc' num2str(cs_coll) '_S' num2str(shift) '.mat'],'dij','-v7.3');
+end
+end

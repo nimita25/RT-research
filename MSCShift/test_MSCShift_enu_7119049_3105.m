@@ -8,7 +8,7 @@ load([folder ptid '.mat'], 'ct', 'cst');
 px = 2; % prescription dose
 nfrac = 30; % number of fraction
 mu_min = 5; % MMU threshold
-qc = 1; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice of shifts, qc = 3: QC with multi MSC per angle
+qc = 2; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice of shifts, qc = 3: QC with multi MSC per angle
 
 %% Define target and OAR
 ctv1=cst{9,4}{1};   % ptv60, 2*30
@@ -23,34 +23,38 @@ oar(4)={ctv2ptv_080720(ctv1,30,ct.cubeDim,ct.resolution)};
 
 N_Dij = 1;
 
-
+all_shifts = [0 1 2]; % 3 shift enum exps done using [0 -1 2]
+all_ctc = [4 ];
+num_ctc = numel(all_ctc);
+counter = 1;
+for a1 = all_shifts
+for a2 = all_shifts
+for a3 = all_shifts
+%for a4 = all_shifts
+    
 %clinical choice of 9306087 often used: id=[45,135,225,315]
 %% Define  delivery angles
 id = [0 120 240];
-all_ctc = [4 ];
-num_ctc = numel(all_ctc);
 
 %% Define MSC shifts
 if qc <= 1 || qc == 3
-    shifts = [0 1 2 -1];
-    num_shifts = numel(shifts);
-    shifts = repmat(shifts,1,numel(all_ctc));
-    
+    shifts = [0 1 2];
+
     %% Load influence matrix
-    load([folder ptid '_' num2str(id(1)) '_ctc' num2str(all_ctc(1)) '_S' num2str(shifts(1)) '.mat'], 'dij');
+    load([folder ptid '_' num2str(id(1)) '_S' num2str(shifts(1)) '.mat'], 'dij');
     m = size(dij.physicalDose{1}, 1);
     N = zeros(numel(id)*numel(shifts), 1);
     N(1) = size(dij.physicalDose{1}, 2);
     if numel(shifts) > 1
         for j = 2:numel(shifts)
-            load([folder ptid '_' num2str(id(1)) '_ctc' num2str(all_ctc(ceil(j/num_shifts))) '_S' num2str(shifts(j)) '.mat'], 'dij');
+            load([folder ptid '_' num2str(id(1)) '_S' num2str(shifts(j)) '.mat'], 'dij');
             N(j) = size(dij.physicalDose{1}, 2);
         end
     end
     
     for i = 2:numel(id)
         for j = 1:numel(shifts)
-            load([folder ptid '_' num2str(id(i)) '_ctc' num2str(all_ctc(ceil(j/num_shifts))) '_S' num2str(shifts(j)) '.mat'], 'dij');
+            load([folder ptid '_' num2str(id(i)) '_S' num2str(shifts(j)) '.mat'], 'dij');
             N((i-1)*numel(shifts)+j) = size(dij.physicalDose{1}, 2);
         end
     end
@@ -60,7 +64,7 @@ if qc <= 1 || qc == 3
     n = 0;
     for i = 1:numel(id)
         for j = 1:numel(shifts)
-            load([folder ptid '_' num2str(id(i)) '_ctc' num2str(all_ctc(ceil(j/num_shifts))) '_S' num2str(shifts(j)) '.mat'], 'dij' );
+            load([folder ptid '_' num2str(id(i)) '_S' num2str(shifts(j)) '.mat'], 'dij' );
             Dij(:, n + (1:N((i-1)*numel(shifts)+j))) = dij.physicalDose{1};
             n_gs((i-1)*numel(shifts)+j) = N((i-1)*numel(shifts)+j);
             n = n + N((i-1)*numel(shifts)+j);
@@ -72,7 +76,8 @@ if qc <= 1 || qc == 3
     disp(size(Dij{1}));
     
 else
-    shifts = [0 0 0];
+    shifts = [a1 a2 a3];
+    disp(shifts)
     all_ctc = [4 4 4];
 
     %% Load influence matrix
@@ -99,10 +104,8 @@ else
     Dij = {Dij};
     
     disp(size(Dij{1}));
-
-
+    
     shifts = [0;];
-    all_ctc = [4;];
     
 end
 
@@ -169,6 +172,7 @@ c_obj=[1;1;1;2;2;
 %     3;3;4;5;4];
 
 
+
 load([folder 'dij_' ptid '_doseGrid113.mat']);
 for i=1:N_c
 tmpCube=zeros(ct.cubeDim);
@@ -231,9 +235,9 @@ var_CG = struct('id_x12', uint32(0), 'id_xs', uint32(1), 'id_xr', uint32(0),'JtJ
 
 nnz_x = 10;
 ip.mup = maxAtA1*1e-2;%1e-1
-disp(maxAtA1)
-disp(ip.mup)
-ip.mu = 0.001;%1e-11;%maxAtA2*1e-1;
+%disp(maxAtA1)
+%disp(ip.mup)
+ip.mu = 1e1;%1e-11;%maxAtA2*1e-1;
 ip.mu_min = mu_min;
 ip.nnz_x = nnz_x;
 x_init = zeros([nX 1], 'single');
@@ -242,8 +246,7 @@ if qc <= 1 || qc == 3
 %tic; [x0,s] = admm_mip_2601(ip,var_CG,NNZ,x_init,qc); toc; %sg := active beam angles
 
 if qc <=1 
-tic; [x0,s] = admm_mipMSCShift_3105(ip,var_CG,x_init,qc);  %s := active shifts
-time_mip = toc;
+tic; [x0,s] = admm_mipMSCShift_3105(ip,var_CG,x_init,qc); toc; %s := active shifts
 
 n = 0;
 tmp_N = zeros(numel(id),1);
@@ -257,8 +260,7 @@ end
 N = tmp_N;
 
 else
-tic; [x0,s] = admm_mipmultiMSCShift_3105(ip,var_CG,x_init,NNZ,qc); %s := active shifts
-time_mip = toc;
+tic; [x0,s] = admm_mipmultiMSCShift_3105(ip,var_CG,x_init,NNZ,qc); toc; %s := active shifts
 
 y1=s;
 
@@ -344,23 +346,16 @@ para.nX = nX;
 %dlmwrite('GridSearch_SmartInit.csv', [i_mup i_mu mean(sum(obj)) D95 Dmax],'delimiter',',','-append');
 obj_total = mean(sum(obj));
 
-[D95, Dmax, CI, Dmean_oar1, Dmax_oar1, Dmean_oar2, Dmax_oar2, Dmean_oar3, Dmax_oar3, Dmean_oar4, Dmax_oar4, Dmean_body] = calcpara_HN02_0202(nfrac, d, px, c);
-resd = [D95, Dmax, CI, Dmean_oar1, Dmax_oar1, Dmean_oar2, Dmax_oar2, Dmean_oar3, Dmax_oar3, Dmean_oar4, Dmax_oar4, Dmean_body];
+[D95, Dmax, CI, Dmax_oar1, V25_oar1, Dmax_oar2, V20_oar2, Dmax_oar3, V25_oar3, Dmax_oar4, V12_oar4, Dmean_body] = calcpara_1243050_0202(nfrac, d, px, c);
+resd = [D95, Dmax, CI, Dmax_oar1, V25_oar1, Dmax_oar2, V20_oar2, Dmax_oar3, V25_oar3, Dmax_oar4, V12_oar4, Dmean_body];
 
 % Save output
 clear outp
 outp.id = id;
-outp.shifts = shifts;
-outp.all_ctc = all_ctc;
+%outp.shifts = shifts;
 outp.obj_total = obj_total;
 outp.para = rmfield(para,'Dij');
 outp.para = rmfield(outp.para,'c');
-outp.time_admm = time1;
-if exist('time_mip') == 1
-outp.time_mip = time_mip;
-else
-outp.time_mip = 0;
-end
 outp.x = x;
 outp.factor = factor;
 outp.D95 = D95;
@@ -370,12 +365,13 @@ outp.d = d;
 outp.n_gs = n_gs;
 outp.y1 = y1;
 outp.obj = obj;
-outp.x0 = x0;
+%outp.x0 = x0;
 outp.xp = xp;
 %outp.s = s;
 outp.resd = resd;
 outp.mu = ip.mu;
 outp.mu_min = mu_min;
+outp.time = time1;
 if qc == 0
 outp.method = 'MIP';
 elseif qc == 1
@@ -385,8 +381,21 @@ outp.method = 'RND';
 elseif qc == 3
 outp.method = 'multiQC';
 end
+outp.shiftvals = [a1 a2 a3];
+
+if ~exist('out_enum')
+    out_enum = cell(numel(all_shifts)^numel(id),1);
+end
+out_enum{counter} = outp;
+counter = counter + 1;
+
+end
+end
+end
+%end
+
 %fname =strcat('.\Results_', ptid, '\res_', ptid, '_NNZ_', int2str(NNZ), '_MIP_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
-fname =strcat('./Results_', ptid, '/res0602_', ptid, '_', int2str(numel(id)), '_shifts_', int2str(numel(shifts)), '_', outp.method, '_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
-save(fname,"-struct","outp");
+fname =strcat('./Results_', ptid, '_enum', '/resenum0604_', ptid, '_', int2str(numel(id)), '_shifts_', int2str(numel(all_shifts)), '_', int2str(N_iter_admm), '_', string(datetime('now','Format',"yyyy-MM-dd-HH-mm")), '.mat');
+save(fname,"out_enum",'-v7.3');
 
 

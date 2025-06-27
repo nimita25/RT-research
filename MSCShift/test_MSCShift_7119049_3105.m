@@ -3,12 +3,15 @@
 ptid = '7119049';
 folder = ['../' ptid '/'];
 addpath('../utils')
+addpath('../matRad-master/')
+addpath('../matRad-master-collimator/')
+addpath('../matRad-master/dicomImport/')
 %addpath('G:\Tutorial_030624\code\utils_QC')
 load([folder ptid '.mat'], 'ct', 'cst');
 px = 2; % prescription dose
 nfrac = 30; % number of fraction
 mu_min = 5; % MMU threshold
-qc = 1; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice of shifts, qc = 3: QC with multi MSC per angle
+qc = 3; %qc=1: QC, qc=0: mldivide to solve relaxation of MIP, qc = 2: manual choice of shifts, qc = 3: QC with multi MSC per angle
 
 %% Define target and OAR
 ctv1=cst{9,4}{1};   % ptv60, 2*30
@@ -233,7 +236,7 @@ nnz_x = 10;
 ip.mup = maxAtA1*1e-2;%1e-1
 disp(maxAtA1)
 disp(ip.mup)
-ip.mu = 5e-11;%0.001 --> best for both 3 and 4 shifts runs
+ip.mu = 5e1;%0.001 --> best for 4 shifts runs; 0.01 --> best for 3 shift runs
 ip.mu_min = mu_min;
 ip.nnz_x = nnz_x;
 x_init = zeros([nX 1], 'single');

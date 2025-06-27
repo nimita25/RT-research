@@ -107,7 +107,7 @@ else
 end
 
 NNZ = numel(id);
-N_iter = 10;
+N_iter = 30;
 N_iter_admm = 50;
 
 
@@ -233,7 +233,7 @@ nnz_x = 10;
 ip.mup = maxAtA1*1e-2;%1e-1
 disp(maxAtA1)
 disp(ip.mup)
-ip.mu = 0.001;%1e-11;%maxAtA2*1e-1;
+ip.mu = 5e-11;%0.001 --> best for both 3 and 4 shifts runs
 ip.mu_min = mu_min;
 ip.nnz_x = nnz_x;
 x_init = zeros([nX 1], 'single');

@@ -23,7 +23,7 @@ oar(4)={ctv2ptv_080720(ctv1,30,ct.cubeDim,ct.resolution)};
 
 N_Dij = 1;
 
-all_shifts = [0 1 2]; % 3 shift enum exps done using [0 -1 2]
+all_shifts = [0 1 2 -1]; % 3 shift enum exps done using [0 -1 2]
 all_ctc = [4 ];
 num_ctc = numel(all_ctc);
 counter = 1;

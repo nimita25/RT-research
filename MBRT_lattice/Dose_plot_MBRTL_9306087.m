@@ -1,5 +1,5 @@
 ptid='9306087'; 
-addpath('C:\Users\nshinde\Desktop\pMBRT\pMBRT');
+addpath('../pMBRT');
 method=1;
 gridDim = '111';
 dr = 10;
@@ -7,19 +7,20 @@ ddr = 3;
 px=2;nfrac=10;px0=px*nfrac;pvdr = 5;
 
 % 1. load ct & define oars & optimization parameter (depend on ptid)
-folder = 'C:\Users\nshinde\Desktop\pMBRT\';
-load([folder ptid '\' ptid '.mat'],'cst','ct');
-load([folder ptid '\' 'dij_' ptid '_doseGrid' gridDim '.mat']);
+folder = ['../' ptid '/'];
+load([folder ptid '.mat'], 'ct', 'cst');
+%load([folder ptid '/' ptid '.mat'],'cst','ct');
+load([folder 'dij_' ptid '_doseGrid' gridDim '.mat']);
 
 x0=doseGrid.x;
 y0=doseGrid.y;
 z0=doseGrid.z;
 cubeDim=doseGrid.dimensions;
-x=ct.x;
+x1=ct.x;
 y=ct.y;
 z=ct.z;
 [x0,y0,z0] = ndgrid(x0,y0,z0);
-[x,y,z] = ndgrid(x,y,z);
+[x1,y,z] = ndgrid(x1,y,z);
 
 % 10,4
 %load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_9306087\grid_113\res_9306087_2_1_2024-10-27-19-26.mat','d')
@@ -44,7 +45,10 @@ z=ct.z;
 
 %load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_9306087\res_9306087_4_1_2024-11-16-22-52.mat','d','R')
 
-load('C:\Users\nshinde\Desktop\pMBRT\MBRT_lattice\output_9306087\res_9306087_8_3_2024-12-04-00-58.mat','d','R')
+%load('output_9306087/res_9306087_8_4_2024-12-04-04-25.mat')
+%load('output_9306087/res_9306087_8_2_2024-12-03-23-55.mat')
+load('output_9306087/res_9306087_8_1_2024-12-03-21-18.mat')
+%load('output_9306087/res_9306087_8_3_2024-12-04-00-58.mat')
 
 
 % Load lattice info
@@ -56,7 +60,7 @@ load('9306087_lattice.mat');
 d=d/(px*pvdr);
 d=reshape(d,cubeDim);
 d(d>1.1999)=1.1199;
-ct.cubeHU{1}=interpn(x,y,z,ct.cubeHU{1},x0,y0,z0);
+ct.cubeHU{1}=interpn(x1,y,z,ct.cubeHU{1},x0,y0,z0);
 resultGUI=struct('physicalDose',[]);
 resultGUI.physicalDose=d;
 

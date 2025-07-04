@@ -1,7 +1,7 @@
 for NNZ = 40:5:40
     %clc;clear;close all;
     ptid = '9306087';
-    folder = ['..\' ptid '\'];
+    folder = ['../' ptid '/'];
     load([folder ptid '.mat'], 'ct', 'cst');
     px = 2; % prescription dose
     nfrac = 10; % number of fraction

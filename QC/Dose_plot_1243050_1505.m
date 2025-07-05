@@ -1,6 +1,6 @@
 ptid='1243050'; 
-folder = ['..\' ptid '\'];
-addpath('G:\Tutorial_030624\code\matRad-master\')
+folder = ['../' ptid '/'];
+%addpath('G:\Tutorial_030624\code\matRad-master\')
 load([folder ptid '.mat'], 'ct', 'cst');
 px = 6; % prescription dose
 nfrac = 4; % number of fraction
@@ -30,7 +30,7 @@ for i = 1:N_c
     n_c(i) = numel(c{i});
 end
 
-name1=['Results_1505_1243050\res0202_1243050_3_NNZ_3_RND_50_2025-06-16-09-46.mat']; % Conv
+name1=['Results_1505_1243050/res0202_1243050_3_NNZ_3_RND_50_2025-06-16-09-46.mat']; % Conv
 name2=['Results_1505_1243050\res0202_1243050_3_NNZ_3_RND_50_2025-06-16-09-50.mat']; % GS
 name3=['Results_1505_1243050\res0202_1243050_72_NNZ_3_QC_50_2025-06-14-16-29.mat']; % 72 angles
 name4=['Results_1505_1243050\res0202_1243050_3_NNZ_3_RND_50_2025-06-19-11-28.mat']; % AG

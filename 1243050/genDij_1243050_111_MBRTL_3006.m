@@ -31,7 +31,7 @@ mask(ctv0)=mask(ctv0)+1;
 mask(ptv)=mask(ptv)+1;
 figure;imshow3D(mask,[]);
 
-for ii = [0 120 240]
+for ii = [0 ]
 pln.radiationMode   = 'protons';
 pln.machine         = 'Generic';
 pln.numOfFractions  = 30;
@@ -45,6 +45,7 @@ pln.propOpt.runDAO          = false;
 pln.propOpt.runSequencing   = false;
 
 stf = matRad_generateStf_112018_v2(lss,ct,cst_ptv,pln);
+%stf = matRad_generateStf(ct,cst,pln);
 
 %% add collimator
 min_x = zeros(numel(stf), 1);
@@ -106,6 +107,7 @@ pln.DosePoint=DosePoint;
 
 dij = matRad_calcParticleDose_point_coll(ct,stf,pln,cst_ptv);
 % dij = matRad_calcParticleDose(ct,stf,pln,cst_ptv);
+%dij = matRad_calcDoseInfluence(ct, cst_ptv, stf, pln);
 
 Dij0=spalloc(prod(cubeDim),dij.totalNumOfBixels,1);
 Dij0(DoseNumber,:)=dij.physicalDose{1};

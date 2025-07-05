@@ -30,7 +30,7 @@ for i = 1:N_c
     n_c(i) = numel(c{i});
 end
 
-name1=['Results_1505_HN02\res0202_HN02_4_NNZ_4_RND_50_2025-06-16-09-56.mat']; % Conv
+name1=['Results_1505_HN02/res0202_HN02_4_NNZ_4_RND_50_2025-06-16-09-56.mat']; % Conv
 name2=['Results_1505_HN02\res0202_HN02_4_NNZ_4_RND_50_2025-06-16-09-57.mat']; % GS
 name3=['Results_1505_HN02\res0202_HN02_72_NNZ_4_QC_50_2025-06-14-09-15.mat']; % 72 angles
 name4=['Results_1505_HN02/res0202_HN02_4_NNZ_4_RND_50_2025-06-19-11-29.mat']; % AG
@@ -39,7 +39,7 @@ name4=['Results_1505_HN02/res0202_HN02_4_NNZ_4_RND_50_2025-06-19-11-29.mat']; % 
 % name2=['Results_HN02\res0202_HN02_4_NNZ_4_RND_50_2025-03-21-12-48.mat']; % 24 angles
 % name3=['Results_HN02\res0202_HN02_4_NNZ_4_RND_50_2025-03-21-11-39.mat']; % 72 angles
 
-load(name4,'d');
+load(name1,'d');
 
 
 d=d/px;
@@ -49,9 +49,19 @@ d(d>1.199)=1.199;
 resultGUI=struct('physicalDose',[]);
 resultGUI.physicalDose=d;
 
-tmp=cst([15],:);
+tmp = cell(N_oar+1,6);
+count = 1;
+for jj=[15 2 11 17 16]
+for ii = 1:6
+tmp{count,ii}=cst{jj,ii};
+end
+count=count+1;
+end
 cst=tmp;
 cst{1,5}.visibleColor=[1 1 0];%(!)
+for ii = 1:N_oar
+cst{ii+1,5}.visibleColor=[0 0 0];
+end
 
 
 nx=ct.cubeDim(1);

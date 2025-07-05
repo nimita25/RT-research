@@ -86,10 +86,10 @@ ct.z=doseGrid.z(idz);
 ct.cubeHU{1}=ct.cubeHU{1}(idx,idy,idz);
 resultGUI.physicalDose=resultGUI.physicalDose(idx,idy,idz);
 
-for i=1:size(cst,1)
-mask=zeros([nx ny nz]);
-mask(cst{i,4}{1})=1;
-mask=mask(idx,idy,idz);
-cst{i,4}{1}=find(mask==1);
-end
+% for i=1:size(cst,1)
+% mask=zeros([nx ny nz]);
+% mask(cst{i,4}{1})=1;
+% mask=mask(idx,idy,idz);
+% cst{i,4}{1}=find(mask==1);
+% end
 matRadGUI
